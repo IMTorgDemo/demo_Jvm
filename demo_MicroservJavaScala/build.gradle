@@ -1,0 +1,7 @@
+plugins {
+	id 'io.franzbecker.gradle-lombok' version '1.14' apply false
+}
+
+allprojects {
+	apply plugin: 'io.franzbecker.gradle-lombok'
+}

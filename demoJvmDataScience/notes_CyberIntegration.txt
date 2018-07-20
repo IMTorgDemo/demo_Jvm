@@ -1,0 +1,17 @@
+The following is the workflow for implementing the decision engine formulations:
+
+* _Sarah_
+* document math in confluence
+
+* _Jason_
+* code math in jupyter
+* run simulations, document results
+* document decisions made during analysis
+* export code to _NAME.scala_
+
+* _Alex_
+* move _NAME_.scala into _cyber_ repo directory
+* run tests to complete process
+
+
+

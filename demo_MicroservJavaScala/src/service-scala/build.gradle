@@ -1,0 +1,21 @@
+apply plugin: 'scala'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.scala-lang:scala-library:2.12.6'
+	compile 'org.scalanlp:breeze_2.10:0.12'
+	compile 'org.scalanlp:breeze-viz_2.10:0.8'
+	// https://mvnrepository.com/artifact/org.scalatest/scalatest
+	testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: '3.2.0-SNAP10'
+
+
+	compile project(':common')
+}
+
+task copyDependencies(type: Copy) {
+	into "$buildDir/dependencies"
+	from configurations.compile
+}

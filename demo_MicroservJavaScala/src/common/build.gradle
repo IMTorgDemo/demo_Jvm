@@ -1,0 +1,47 @@
+apply plugin: 'java'
+apply plugin : 'jacoco'
+apply from: 'parent.gradle'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+
+	compile(
+			libs.dynamodb,
+			libs.aspectj,
+			'com.google.guava:guava:r05',
+	)
+
+	testCompile(
+			'commons-beanutils:commons-beanutils:1.9.2',
+			'com.jayway.jsonpath:json-path:2.4.0',
+			'com.fasterxml.jackson.core:jackson-databind:2.8.8',
+			'org.skyscreamer:jsonassert:1.5.0'
+	)
+
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.6'
+}
+
+
+jacocoTestReport {
+	reports {
+		html.enabled = true
+		xml.enabled = false
+		csv.enabled = false
+	}
+}
+
+
+
+javadoc {
+	source = sourceSets.main.allJava
+	classpath = configurations.compile
+}
+
+task stage(dependsOn: ['build', 'clean'])
+test.finalizedBy(jacocoTestReport)

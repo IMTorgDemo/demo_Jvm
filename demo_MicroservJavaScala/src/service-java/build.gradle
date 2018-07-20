@@ -1,0 +1,124 @@
+buildscript {
+	ext {
+		springBootVersion     = "1.5.10.RELEASE"
+		gradleDockerVersion   = "1.2"
+	}
+
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("se.transmode.gradle:gradle-docker:${gradleDockerVersion}")
+	}
+}
+plugins {
+	id 'org.springframework.boot' version '1.5.10.RELEASE'
+}
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply from: '../common/parent.gradle'
+
+
+apply plugin: 'application'
+apply plugin: 'docker'
+
+
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+mainClassName       = "com.whitehawk.DecisionAnalyticsApplication"
+
+jar {
+	baseName = "decision-analytics"
+	group    = "com.whitehawk"
+	version  = "2.0"
+	manifest { attributes "Main-Class": "'com.whitehawk.DecisionAnalyticsApplication" }
+
+
+}
+
+docker {
+	baseImage "build/openjdk:8-jdk"
+	maintainer 'Amit Niroula "amit.niroula@whitehawk.com"'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'https://dl.bintray.com/palantir/releases'
+	}
+}
+
+dependencies {
+
+	compile project(':common')
+	compile project(':decision-engine')
+	compile project(':security-registration')
+	compile "io.springfox:springfox-swagger2:2.8.0"
+	compile "io.springfox:springfox-swagger-ui:2.8.0"
+
+	// tag::jetty[]
+	compile("org.springframework.boot:spring-boot-starter-web") {
+		exclude module: "spring-boot-starter-tomcat"
+	}
+	compile('org.springframework.boot:spring-boot-starter-jetty')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+
+	// end::jetty[]
+
+	testCompile (
+			'commons-beanutils:commons-beanutils:1.9.2',
+			libs.spring_security_test,
+			libs.nitor,
+			'org.springframework.boot:spring-boot-starter-test',
+			'org.springframework:spring-test',
+			'com.palantir.docker.compose:docker-compose-rule-junit4:0.33.0'
+	)
+
+	compile (
+			libs.aspectj,
+			libs.kryo,
+			libs.guava,
+			libs.dynamodb,
+			libs.spring_boot,
+			libs.spring_boot_web,
+			libs.jwt,
+			'org.springframework.boot:spring-boot-starter-mail',
+			'net.logstash.logback:logstash-logback-encoder:4.11',
+			'com.fasterxml.jackson.datatype:jackson-datatype-jsr310',
+			'com.fasterxml.jackson.datatype:jackson-datatype-jdk8'
+	)
+}
+
+jacocoTestReport {
+	reports {
+		html.enabled = true
+		xml.enabled = false
+		csv.enabled = false
+	}
+}
+test.finalizedBy jacocoTestReport
+
+task stage(dependsOn: ['build', 'clean'])
+build.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+	into "$buildDir/lib"
+	from(configurations.compile)
+}
+stage.dependsOn(copyToLib)
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.9'
+}
+
+test {
+	testLogging {
+		exceptionFormat = 'full'
+	}
+}
+
+build.finalizedBy(wrapper)
